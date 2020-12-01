@@ -27,10 +27,6 @@ if __name__ == "__main__":
     # sample centroids from points
     centroids = tf.Variable(tf.random.shuffle(points)[:num_clusters])  # [num_clusters, 2]
 
-    # plot initialization
-    assignments = np.zeros([num_points])
-    plot_data_and_centroids(points, centroids, assignments)
-
     # training loop
     for step in range(num_interations):
         # prepare for broadcasting
@@ -41,17 +37,18 @@ if __name__ == "__main__":
         distances = tf.reduce_sum(distances, 2)  # [num_clusters, num_points]
         # determine cluster assignments
         assignments = tf.argmin(distances, 0)  # [num_points]
-
+        # plot initial centroid assignments
+        if step == 0:
+            plot_data_and_centroids(points, centroids, assignments)
         # compare clusters with cluster assignments and calculate means across points assigned to each cluster
         means = []
         for c in range(num_clusters):
             cluster_points = tf.gather(points, tf.reshape(tf.where(tf.equal(assignments, c)), [-1]))
             cluster_mean = tf.reduce_mean(cluster_points, axis=0)
             means.append(cluster_mean)
-
         # update centroids
         centroids.assign(means)
-
-    # plot points with final centroids
-    print(f"Centroids:\n{centroids.numpy()}")
-    plot_data_and_centroids(points, centroids, assignments)
+        # plot final centroid assignments
+        if step == num_interations - 1:
+            print(f"Centroids:\n{centroids.numpy()}")
+            plot_data_and_centroids(points, centroids, assignments)
