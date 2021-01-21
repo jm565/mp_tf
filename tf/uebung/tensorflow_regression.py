@@ -68,7 +68,7 @@ def linear_model(inputs):
     return w * inputs + b
 
 # Plot initial model
-# plot_model(w, b, data, labels, save_path="lin_regression_model_initial.png")
+plot_model(w, b, data, labels, save_path="lin_regression_model_initial.png")
 
 
 # loss (mean of squared errors)

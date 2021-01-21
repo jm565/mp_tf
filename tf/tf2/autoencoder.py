@@ -1,18 +1,26 @@
-import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.datasets.mnist import read_data_sets
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
-import matplotlib.pyplot as plt
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+import tensorflow.keras as keras
+from tensorflow.keras.datasets.mnist import load_data
+from tf.tf2.util import plot_loss_curve, plot_predictions
+
 
 if __name__ == "__main__":
     # Import MNIST data
-    mnist = read_data_sets("data", one_hot=True)
+    (x_train, y_train), (x_test, y_test) = load_data()
+    x_train = x_train.reshape((-1, 28, 28, 1))
+    x_test = x_test.reshape((-1, 28, 28, 1))
 
     # Hyperparameters
-    train_steps = 5000
-    learning_rate = 0.01
-    batch_size = 100
+    epochs = 10
+    learning_rate = 0.001
+    batch_size = 32
+    dropout_rate = 0.5
     corruption = 0.3
+
+    keras.layers.GaussianNoise
+    keras.layers.Dropout
 
     # Model parameters (use square numbers for n_hidden for visualization purposes)
     n_hidden_1 = 256

@@ -59,7 +59,7 @@ update_frequency = 5
 
 init = tf.global_variables_initializer()
 
-# Launch the tensorflow graph
+# Launch the tf graph
 with tf.Session() as sess:
     sess.run(init)
     i = 0
