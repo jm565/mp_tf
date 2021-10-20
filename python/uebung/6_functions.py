@@ -25,15 +25,36 @@ for distance in [1, 10, 80, 200]:
 
 # Optionale Parameter und mehrere Rückgabewerte
 def func_with_defaults(a, b, c=0, d=0, e=1):
-    res1 = (a + b + c + d) * e
-    res2 = (a + b + c + d) / e
+    res1 = (a + b + c + d) * e  # lokale Definition von res1
+    res2 = (a + b + c + d) / e  # lokale Definition von res2
     return res1, res2
+
+
+func_with_defaults(1, 1, e=10)
+# print(res1, res2)  # Error (diese Variablen stehen global nicht zur Verfügung)
+var1, var2 = func_with_defaults(1, 1, e=10)
+print(var1, var2)
 
 
 print("---------------------------")
 print(func_with_defaults(1, 1))
 print(func_with_defaults(1, 1, 9, 9, 2))
 print(func_with_defaults(5, 5, e=10))
+
+
+# Globale und lokale Objekte
+global_var = 0
+def func(integer):
+    global global_var
+    local_var = integer ** 2
+    print(global_var)
+    global_var += local_var  # benötigt 'global' keyword
+
+
+func(10)
+func(5)
+print(global_var)
+# print(local_var)  # Error
 
 
 # Beliebige Anzahl von Paramtern
