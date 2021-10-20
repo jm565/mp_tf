@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_data_and_centroids(data, centroids, colors):
+def plot_data_and_centroids(data, centroids, colors, title=""):
+    if title:
+        plt.title(title)
     plt.scatter(data[:, 0], data[:, 1], c=colors, s=25, alpha=0.5)
     plt.scatter(centroids[:, 0], centroids[:, 1], marker='x', s=200, c="black", linewidth=2)
     plt.show()
@@ -15,7 +17,7 @@ if __name__ == "__main__":
     # Parameters
     num_points = 300
     num_clusters = 3
-    num_interations = 100
+    num_interations = 1000
 
     # data generation
     points_a = np.random.normal(0.0, 0.5, [num_points // 3, 2])  # [num_points // 3, 2]
@@ -39,7 +41,7 @@ if __name__ == "__main__":
         assignments = tf.argmin(distances, 0)  # [num_points]
         # plot initial centroid assignments
         if step == 0:
-            plot_data_and_centroids(points, centroids, assignments)
+            plot_data_and_centroids(points, centroids, assignments, "Initial centroids")
         # compare clusters with cluster assignments and calculate means across points assigned to each cluster
         means = []
         for c in range(num_clusters):
@@ -51,4 +53,4 @@ if __name__ == "__main__":
         # plot final centroid assignments
         if step == num_interations - 1:
             print(f"Centroids:\n{centroids.numpy()}")
-            plot_data_and_centroids(points, centroids, assignments)
+            plot_data_and_centroids(points, centroids, assignments, "Final centroids")

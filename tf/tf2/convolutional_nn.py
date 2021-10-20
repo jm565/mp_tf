@@ -1,26 +1,29 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras.datasets.mnist import load_data
 from tf.tf2.util import plot_loss_curve, plot_predictions
 
-
 if __name__ == "__main__":
     # Import MNIST data
     (x_train, y_train), (x_test, y_test) = load_data()
-    x_train = x_train.reshape((-1, 28, 28, 1))
-    x_test = x_test.reshape((-1, 28, 28, 1))
+    x_train = x_train.reshape((-1, 28, 28, 1)).astype('float32')
+    x_test = x_test.reshape((-1, 28, 28, 1)).astype('float32')
+    x_train /= 255.0
+    x_test /= 255.0
 
     # Hyperparameters
-    epochs = 1
+    use_ckpt = False
+    epochs = 10
     learning_rate = 0.001
     batch_size = 32
     dropout_rate = 0.5
 
     # Keras model
     checkpoint_path = "nets/cnn.ckpt"
-    if os.path.isdir(checkpoint_path):
+    if use_ckpt and os.path.isdir(checkpoint_path):
         print(f"Loading model from {checkpoint_path}")
         model = keras.models.load_model(checkpoint_path)
     else:

@@ -1,162 +1,147 @@
 import os
+import matplotlib.pyplot as plt
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras.datasets.mnist import load_data
-from tf.tf2.util import plot_loss_curve, plot_predictions
-
+from tf.tf2.util import plot_loss_curve
 
 if __name__ == "__main__":
     # Import MNIST data
     (x_train, y_train), (x_test, y_test) = load_data()
-    x_train = x_train.reshape((-1, 28, 28, 1))
-    x_test = x_test.reshape((-1, 28, 28, 1))
+    img_shape = x_train[0].shape
+    flat_shape = img_shape[0] * img_shape[1]
 
     # Hyperparameters
-    epochs = 10
+    use_ckpt = True
+    epochs = 1
     learning_rate = 0.001
     batch_size = 32
-    dropout_rate = 0.5
-    corruption = 0.3
+    corruption_rate = 0.5
 
-    keras.layers.GaussianNoise
-    keras.layers.Dropout
+    # Model parameters
+    hidden_units = [256, 64, 16]
 
-    # Model parameters (use square numbers for n_hidden for visualization purposes)
-    n_hidden_1 = 256
-    n_hidden_2 = 64
-    n_hidden_3 = 16
-    n_input = 28*28  # flattened 28x28 images
-    stddev = 0.1
-    actf = tf.nn.relu
+    # Keras model
+    checkpoint_path = "nets/ae.ckpt"
+    if use_ckpt and os.path.isdir(checkpoint_path):
+        print(f"Loading model from {checkpoint_path}")
+        model = keras.models.load_model(checkpoint_path)
+    else:
+        print("Building new model.")
+        # Functional API
+        image = keras.layers.Input(img_shape, name="image_input")
+        corruption = keras.layers.Input(img_shape, name="corruption_mask")
+        corrupted_img = keras.layers.Multiply(name="corrupted_image")([image, corruption])
+        flat_input = keras.layers.Flatten(name="flat_input")(corrupted_img)
+        enc_1 = keras.layers.Dense(units=hidden_units[0], activation='relu', name="encoder_1")(flat_input)
+        enc_2 = keras.layers.Dense(units=hidden_units[1], activation='relu', name="encoder_2")(enc_1)
+        enc_3 = keras.layers.Dense(units=hidden_units[2], activation='relu', name="encoder_3")(enc_2)
+        dec_3 = keras.layers.Dense(units=hidden_units[1], activation='relu', name="decoder_3")(enc_3)
+        dec_2 = keras.layers.Dense(units=hidden_units[0], activation='relu', name="decoder_2")(dec_3)
+        dec_1 = keras.layers.Dense(units=flat_shape, activation='relu', name="decoder_1")(dec_2)
+        output = keras.layers.Reshape(target_shape=img_shape, name="output")(dec_1)
+        model = keras.Model(inputs=[image, corruption], outputs=output)
 
-    # Graph input
-    x = tf.placeholder(tf.float32, [None, n_input])
-    mask = tf.placeholder(tf.float32, [None, n_input])
+        model.compile(loss=keras.losses.MeanSquaredError(),
+                      optimizer=keras.optimizers.RMSprop(learning_rate=learning_rate),
+                      # optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+                      metrics="mean_squared_error")
 
-    # Model
-    x_mask = mask * x  # corrupted images
-    # Encoder
-    W1 = tf.Variable(tf.random_normal([n_input, n_hidden_1], stddev=stddev))
-    b1 = tf.Variable(tf.random_normal([n_hidden_1], stddev=stddev))
-    enc1 = actf(tf.matmul(x_mask, W1) + b1)
+    # Model summary
+    print(model.summary())
 
-    W2 = tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], stddev=stddev))
-    b2 = tf.Variable(tf.random_normal([n_hidden_2], stddev=stddev))
-    enc2 = actf(tf.matmul(enc1, W2) + b2)
+    # Setup checkpointing
+    checkpoint = keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 monitor="loss",
+                                                 mode="min",
+                                                 verbose=1,
+                                                 save_best_only=True)
 
-    W3 = tf.Variable(tf.random_normal([n_hidden_2, n_hidden_3], stddev=stddev))
-    b3 = tf.Variable(tf.random_normal([n_hidden_3], stddev=stddev))
-    enc3 = actf(tf.matmul(enc2, W3) + b3)
-    # Decoder
-    W4 = tf.Variable(tf.random_normal([n_hidden_3, n_hidden_2], stddev=stddev))
-    b4 = tf.Variable(tf.random_normal([n_hidden_2], stddev=stddev))
-    dec1 = actf(tf.matmul(enc3, W4) + b4)
+    # Model training
+    print("Training.")
+    corruption_masks = np.random.binomial(1, 1 - corruption_rate, x_train.shape)
+    history = model.fit(x=[x_train, corruption_masks], y=x_train,
+                        batch_size=batch_size, epochs=epochs, verbose=1, callbacks=[checkpoint])
+    epoch_history = history.epoch
+    loss_history = history.history["loss"]
+    plot_loss_curve(epoch_history, loss_history)
 
-    W5 = tf.Variable(tf.random_normal([n_hidden_2, n_hidden_1], stddev=stddev))
-    b5 = tf.Variable(tf.random_normal([n_hidden_1], stddev=stddev))
-    dec2 = actf(tf.matmul(dec1, W5) + b5)
+    # Test model
+    print("Testing.")
+    corruption_masks = np.random.binomial(1, 1 - corruption_rate, x_test.shape)
+    model.evaluate(x=[x_test, corruption_masks], y=x_test, batch_size=batch_size, verbose=1)
 
-    W6 = tf.Variable(tf.random_normal([n_hidden_1, n_input], stddev=stddev))
-    b6 = tf.Variable(tf.random_normal([n_input], stddev=stddev))
-    dec3 = actf(tf.matmul(dec2, W6) + b6)
+    # Get some samples and plot the corresponding images
+    num_samples = 5
+    indices = np.random.randint(0, x_test.shape[0], size=num_samples)
+    test_imgs = x_test[indices]
+    corruption_masks = np.random.binomial(1, 1 - corruption_rate, test_imgs.shape)
 
-    # Loss function
-    loss = tf.reduce_mean(tf.square(x - dec3))
+    relevant_layer_names = ["corrupted_image", "encoder_1", "encoder_2", "encoder_3",
+                            "decoder_3", "decoder_2", "output"]
+    relevant_layers = [model.get_layer(layer_name) for layer_name in relevant_layer_names]
+    temp_model = keras.Model(inputs=model.input, outputs=[layer.output for layer in relevant_layers])
+    predictions = temp_model([test_imgs, corruption_masks])
+    outputs = dict(zip(relevant_layer_names, predictions))
 
-    # Optimizer and train op
-    # optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
-    train_op = optimizer.minimize(loss)
+    plt.figure(figsize=(7, num_samples))
+    for i in range(num_samples):
+        h1_width = int(np.sqrt(hidden_units[0]))
+        h2_width = int(np.sqrt(hidden_units[1]))
+        h3_width = int(np.sqrt(hidden_units[2]))
+        img_in = outputs["corrupted_image"].numpy()[i, :, :]
+        img_enc1 = outputs["encoder_1"].numpy()[i, :].reshape(h1_width, h1_width)
+        img_enc2 = outputs["encoder_2"].numpy()[i, :].reshape(h2_width, h2_width)
+        img_enc3 = outputs["encoder_3"].numpy()[i, :].reshape(h3_width, h3_width)
+        img_dec1 = outputs["decoder_3"].numpy()[i, :].reshape(h2_width, h2_width)
+        img_dec2 = outputs["decoder_2"].numpy()[i, :].reshape(h1_width, h1_width)
+        img_out = outputs["output"].numpy()[i, :, :]
+        # plot input image
+        plt.subplot(num_samples, 7, 7 * i + 1)
+        plt.imshow(img_in, cmap='gray')
+        plt.axis("off")
+        if i == 0:
+            plt.title("Input")
+        # plot encoder layer 1
+        plt.subplot(num_samples, 7, 7 * i + 2)
+        plt.imshow(img_enc1, cmap='gray')
+        plt.axis("off")
+        if i == 0:
+            plt.title("Enc 1")
+        # plot encoder layer 2
+        plt.subplot(num_samples, 7, 7 * i + 3)
+        plt.imshow(img_enc2, cmap='gray')
+        plt.axis("off")
+        if i == 0:
+            plt.title("Enc 2")
+        # plot encoder layer 3
+        plt.subplot(num_samples, 7, 7 * i + 4)
+        plt.imshow(img_enc3, cmap='gray')
+        plt.gray()
+        plt.axis("off")
+        if i == 0:
+            plt.title("Enc 3")
+        # plot decoder layer 1
+        plt.subplot(num_samples, 7, 7 * i + 5)
+        plt.imshow(img_dec1, cmap='gray')
+        plt.axis("off")
+        if i == 0:
+            plt.title("Dec 1")
+        # plot decoder layer 2
+        plt.subplot(num_samples, 7, 7 * i + 6)
+        plt.imshow(img_dec2, cmap='gray')
+        plt.axis("off")
+        if i == 0:
+            plt.title("Dec 2")
+        # plot decoder layer 3 (reconstructed image)
+        plt.subplot(num_samples, 7, 7 * i + 7)
+        plt.imshow(img_out, cmap='gray')
+        plt.axis("off")
+        if i == 0:
+            plt.title("Output")
 
-    init = tf.global_variables_initializer()
-
-    with tf.Session() as sess:
-        sess.run(init)
-
-        # Training loop
-        print("Training...")
-        # with tf.contrib.tfprof.ProfileContext('/home/johannes/devel/profile/') as pctx:
-        for i in range(train_steps):
-            batch_x, _ = mnist.train.next_batch(batch_size)
-            mask_np = np.random.binomial(1, 1 - corruption, batch_x.shape)
-            # run train op and compute batch loss
-            _, batch_loss = sess.run([train_op, loss], feed_dict={x: batch_x, mask: mask_np})
-            if (i+1) % 500 == 0:
-                print("Train step {}:\n Batch loss = {}".format(i+1, batch_loss))
-        print("Optimization finished.")
-
-        # Test model
-        mask_np = np.random.binomial(1, 1 - corruption, mnist.test.images.shape)
-        test_loss = sess.run(loss, feed_dict={x: mnist.test.images, mask: mask_np})
-        print("Test loss = {:.3f}".format(test_loss))
-
-        # Look at some examples (and plot them)
-        num_samples = 5
-        # take the first num_samples images
-        test_images = mnist.test.images[:num_samples, :]
-        # compute model layer outputs (including image reconstruction)
-        mask_np = np.random.binomial(1, 1 - corruption, test_images.shape)
-        imgs_enc1, imgs_enc2, imgs_enc3, imgs_dec1, imgs_dec2, imgs_dec3\
-            = sess.run([enc1, enc2, enc3, dec1, dec2, dec3], feed_dict={x: test_images, mask: mask_np})
-        # plot images
-        test_images = test_images * mask_np
-        plt.figure(figsize=(7, num_samples))
-        for i in range(num_samples):
-            h1_width = int(np.sqrt(n_hidden_1))
-            h2_width = int(np.sqrt(n_hidden_2))
-            h3_width = int(np.sqrt(n_hidden_3))
-            img_in = test_images[i, :].reshape(28, 28)
-            img_enc1 = imgs_enc1[i, :].reshape(h1_width, h1_width)
-            img_enc2 = imgs_enc2[i, :].reshape(h2_width, h2_width)
-            img_enc3 = imgs_enc3[i, :].reshape(h3_width, h3_width)
-            img_dec1 = imgs_dec1[i, :].reshape(h2_width, h2_width)
-            img_dec2 = imgs_dec2[i, :].reshape(h1_width, h1_width)
-            img_dec3 = imgs_dec3[i, :].reshape(28, 28)
-            # plot input image
-            plt.subplot(num_samples, 7, 7 * i + 1)
-            plt.imshow(img_in, cmap='gray')
-            plt.axis("off")
-            if i == 0:
-                plt.title("Input")
-            # plot encoder layer 1
-            plt.subplot(num_samples, 7, 7 * i + 2)
-            plt.imshow(img_enc1, cmap='gray')
-            plt.axis("off")
-            if i == 0:
-                plt.title("Enc 1")
-            # plot encoder layer 2
-            plt.subplot(num_samples, 7, 7 * i + 3)
-            plt.imshow(img_enc2, cmap='gray')
-            plt.axis("off")
-            if i == 0:
-                plt.title("Enc 2")
-            # plot encoder layer 3
-            plt.subplot(num_samples, 7, 7 * i + 4)
-            plt.imshow(img_enc3, cmap='gray')
-            plt.gray()
-            plt.axis("off")
-            if i == 0:
-                plt.title("Enc 3")
-            # plot decoder layer 1
-            plt.subplot(num_samples, 7, 7 * i + 5)
-            plt.imshow(img_dec1, cmap='gray')
-            plt.axis("off")
-            if i == 0:
-                plt.title("Dec 1")
-            # plot decoder layer 2
-            plt.subplot(num_samples, 7, 7 * i + 6)
-            plt.imshow(img_dec2, cmap='gray')
-            plt.axis("off")
-            if i == 0:
-                plt.title("Dec 2")
-            # plot decoder layer 3 (reconstructed image)
-            plt.subplot(num_samples, 7, 7 * i + 7)
-            plt.imshow(img_dec3, cmap='gray')
-            plt.axis("off")
-            if i == 0:
-                plt.title("Dec 3")
-
-        # display figure
-        # plt.subplots_adjust(hspace=0.5)
-        plt.show()
+    # display figure
+    # plt.subplots_adjust(hspace=0.5)
+    plt.show()

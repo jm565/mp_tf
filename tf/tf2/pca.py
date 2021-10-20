@@ -62,8 +62,8 @@ if __name__ == "__main__":
         m = tf.matmul(tf.transpose(matrix), matrix)
         return m / tf.cast(tf.shape(matrix)[0], dtype=tf.float32)
 
-    c = tf_cov(data_normalized, bias=True)
-    # c = tf_cov2(data_normalized)
+    # c = tf_cov(data_normalized, bias=True)
+    c = tf_cov2(data_normalized)
 
     # Eigenvalues & Eigenvectors
     eigen_vals, eigen_vecs = tf.linalg.eigh(c)
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     # New data matrix
     x = tf.matmul(data_normalized, eigen_vecs)
-    # Original data
+    # Original space
     pca = tf.matmul(x, tf.transpose(eigen_vecs)) + data_mean
 
     # Plot results
@@ -87,5 +87,4 @@ if __name__ == "__main__":
     plot_data(data, classes, show=False)
     plt.subplot(1, 2, 2)
     plt.title("Dataset after PCA")
-    plot_data(pca, classes, show=False)
-    plt.show()
+    plot_data(pca, classes, show=True)
