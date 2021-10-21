@@ -14,6 +14,8 @@ from tf.tf2.util import plot_loss_curve, plot_predictions
 if __name__ == "__main__":
     # Import MNIST data
     (x_train, y_train), (x_test, y_test) = load_data()
+    x_train = x_train / 255.0  # norm to [0,1]
+    x_test = x_test / 255.0  # norm to [0,1]
     n_classes = 10
     img_shape = x_train[0].shape
     n_timesteps, n_input = img_shape[0], img_shape[1]  # interpret images as sequences of vectors

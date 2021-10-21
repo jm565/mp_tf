@@ -32,13 +32,14 @@ def plot_images(images, labels=None, label_colors=None):
                 plt.title(labels[i])
         plt.axis('off')
         plt.imshow(images[i], cmap='gray')
+    plt.tight_layout()
     plt.show()
 
 
-def plot_predictions(images, logits, gt_labels):
-    probs = tf.nn.softmax(logits)  # class probabilities as softmax over logits
+def plot_predictions(images, predictions, labels):
+    probs = tf.nn.softmax(predictions)  # class probabilities as softmax over logits
     predictions = np.argmax(probs, axis=1)  # most probable class prediction
-    correct = predictions == gt_labels  # correct or incorrect predictions
+    correct = predictions == labels  # correct or incorrect predictions
     colors = [("green" if correct[i] else "red") for i in range(correct.shape[0])]  # assign colors for visualization
     info = [f"{predictions[i]} ({100 * np.max(probs[i]):3.2f}%)" for i in range(len(predictions))]  # build titles
     plot_images(images.reshape(-1, 28, 28), info, colors)
