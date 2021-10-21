@@ -90,7 +90,7 @@ dataset = tf.data.Dataset.from_tensor_slices(all_digits)
 dataset = dataset.shuffle(buffer_size=1024).batch(batch_size)
 
 epochs = 20  # In practice you need at least 20 epochs to generate nice digits.
-save_dir = "/"
+save_dir = "images"
 
 for epoch in range(epochs):
     print("\nStart epoch", epoch)
