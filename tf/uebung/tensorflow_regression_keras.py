@@ -5,10 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_model(weight, bias, inputs, targets, save_path=None):
+def plot_model(weight, bias, inputs, targets, name="", show=False, save_path=None):
     """Plot the trained model against the training inputs and targets."""
     # Create separate figure
-    plt.figure("Model evaluation")
+    plt.figure(name)
     # Label the axes
     plt.xlabel("Inputs")
     plt.ylabel("Targets")
@@ -23,11 +23,15 @@ def plot_model(weight, bias, inputs, targets, save_path=None):
     # Save the figure
     if save_path:
         plt.savefig(save_path, dpi=1000, bbox_inches='tight', pad_inches=0.1)
-    # Render the plot
-    plt.show()
+    if show:
+        # Render the plot
+        plt.show()
+    else:
+        # Or close the current figure
+        plt.close()
 
 
-def plot_loss_curve(epochs, losses, save_path=None):
+def plot_loss_curve(epochs, losses, show=False, save_path=None):
     """Plot the loss curve, which shows loss vs. epoch."""
     # Create separate figure
     plt.figure("Loss curve")
@@ -41,9 +45,16 @@ def plot_loss_curve(epochs, losses, save_path=None):
     # Save the figure
     if save_path:
         plt.savefig(save_path, dpi=1000, bbox_inches='tight', pad_inches=0.1)
-    # Render the plot
-    plt.show()
+    if show:
+        # Render the plot
+        plt.show()
+    else:
+        # Or close the current figure
+        plt.close()
 
+
+# Setup
+show = False
 
 # Data
 num_datapoints = 13
@@ -52,12 +63,16 @@ labels = data * 3 + 2 + np.random.normal(0, 1, size=data.shape)
 labels = labels.astype(np.float32)
 
 # Plot data
-plt.figure()
+plt.figure("Linear data")
 plt.scatter(data, labels)
 plt.xlabel("Inputs")
 plt.ylabel("Targets")
 plt.savefig("lin_regression_data.png", dpi=1000, bbox_inches='tight', pad_inches=0.1)
-plt.show()
+if show:
+    plt.show()
+else:
+    plt.close()
+
 
 # Keras sequential model
 def sequential_model(learning_rate):
@@ -96,6 +111,7 @@ def train_model(model, inputs, targets, epochs, batch_size):
     loss_history = history.history["loss"]
     return weight, bias, epoch_history, loss_history
 
+
 # Hyperparameters
 learning_rate = 0.1
 num_epochs = 200
@@ -107,12 +123,14 @@ linear_model = sequential_model(learning_rate)
 # Plot initial model and summary
 print(linear_model.summary())
 initial_vars = [var.numpy() for var in linear_model.trainable_variables]
-plot_model(*initial_vars, data, labels, save_path="lin_regression_model_initial.png")
+plot_model(*initial_vars, data, labels,
+           name="Initial model", show=show, save_path="lin_regression_model_initial.png")
 
 # Train model
-trained_weight, trained_bias, epochs, losses = train_model(linear_model, data, labels, num_epochs, batch_size)
+tr_weight, tr_bias, epochs, losses = train_model(linear_model, data, labels, num_epochs, batch_size)
 
 # Plot trained model, parameters and loss curve
-print(f"Trained parameters: w = {trained_weight}, b = {trained_bias}")
-plot_model(trained_weight, trained_bias, data, labels, save_path="lin_regression_model_trained.png")
-plot_loss_curve(epochs, losses, save_path="lin_regression_loss_curve.png")
+print(f"Trained parameters: w = {tr_weight}, b = {tr_bias}")
+plot_model(tr_weight, tr_bias, data, labels,
+           name="Trained model", show=show, save_path="lin_regression_model_trained.png")
+plot_loss_curve(epochs, losses, show=show, save_path="lin_regression_loss_curve.png")

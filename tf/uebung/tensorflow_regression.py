@@ -5,10 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_model(weight, bias, inputs, targets, save_path=None):
+def plot_model(weight, bias, inputs, targets, name="", show=False, save_path=None):
     """Plot the trained model against the training inputs and targets."""
     # Create separate figure
-    plt.figure("Model evaluation")
+    plt.figure(name)
     # Label the axes
     plt.xlabel("Inputs")
     plt.ylabel("Targets")
@@ -23,11 +23,15 @@ def plot_model(weight, bias, inputs, targets, save_path=None):
     # Save the figure
     if save_path:
         plt.savefig(save_path, dpi=1000, bbox_inches='tight', pad_inches=0.1)
-    # Render the plot
-    plt.show()
+    if show:
+        # Render the plot
+        plt.show()
+    else:
+        # Or close the current figure
+        plt.close()
 
 
-def plot_loss_curve(epochs, losses, save_path=None):
+def plot_loss_curve(epochs, losses, show=False, save_path=None):
     """Plot the loss curve, which shows loss vs. epoch."""
     # Create separate figure
     plt.figure("Loss curve")
@@ -41,9 +45,16 @@ def plot_loss_curve(epochs, losses, save_path=None):
     # Save the figure
     if save_path:
         plt.savefig(save_path, dpi=1000, bbox_inches='tight', pad_inches=0.1)
-    # Render the plot
-    plt.show()
+    if show:
+        # Render the plot
+        plt.show()
+    else:
+        # Or close the current figure
+        plt.close()
 
+
+# Setup
+show = True
 
 # Data
 num_datapoints = 13
@@ -52,23 +63,29 @@ labels = data * 3 + 2 + np.random.normal(0, 1, size=data.shape)
 labels = labels.astype(np.float32)
 
 # Plot data
-plt.figure()
+plt.figure("Linear data")
 plt.scatter(data, labels)
 plt.xlabel("Inputs")
 plt.ylabel("Targets")
 plt.savefig("lin_regression_data.png", dpi=1000, bbox_inches='tight', pad_inches=0.1)
-plt.show()
+if show:
+    plt.show()
+else:
+    plt.close()
+
 
 # Model parameters (static initialization)
 w = tf.Variable([0.5])
 b = tf.Variable([10.0])
 
+
 # Actual model
 def linear_model(inputs):
     return w * inputs + b
 
+
 # Plot initial model
-plot_model(w, b, data, labels, save_path="lin_regression_model_initial.png")
+plot_model(w, b, data, labels, name="Initial model", show=show, save_path="lin_regression_model_initial.png")
 
 
 # loss (mean of squared errors)
@@ -104,9 +121,9 @@ for epoch in range(num_epochs):
     # Track the loss for each epoch
     loss_history.append(loss)
     if epoch % 50 == 0 or epoch == num_epochs - 1:
-        print(f"Epoch {epoch}, Loss = {loss:.3f}")
+        print(f"Epoch {epoch + 1}, Loss = {loss:.3f}")
 
 # Plot trained model, parameters and loss curve
 print(f"Trained parameters: w = {w.numpy()}, b = {b.numpy()}")
-plot_model(w, b, data, labels, save_path="lin_regression_model_trained.png")
-plot_loss_curve(list(range(num_epochs)), loss_history, save_path="lin_regression_loss_curve.png")
+plot_model(w, b, data, labels, name="Trained model", show=show, save_path="lin_regression_model_trained.png")
+plot_loss_curve(list(range(num_epochs)), loss_history, show=show, save_path="lin_regression_loss_curve.png")
