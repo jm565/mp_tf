@@ -14,8 +14,9 @@ points_in_q1 = [(x, y) for x in x_coords for y in y_coords if x >= 0 and y >= 0]
 
 print(f"Punkte im 1. Quadranten: {points_in_q1}")
 
-print("Schreibe nach 'aufgabe06.txt' ...")
-with open("aufgabe06.txt", "w") as f:
+file_path = "aufgabe06.txt"
+print(f"Schreibe nach '{file_path}'...")
+with open(file_path, "w") as f:
     for p in points_in_q1:
         f.write(str(p))
         f.write("\n")
