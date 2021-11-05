@@ -33,7 +33,7 @@ while guess != to_be_guessed:
         print("Schade, dass du aufgibst!")
         break
     else:
-        print("Nur Zahlen von 1 bis {}!".format(n))
+        print(f"Nur Zahlen von 1 bis {n}!")
         continue
 else:
     print(f"Gratuliere, die gesuchte Zahl war {to_be_guessed}!")
@@ -45,7 +45,7 @@ languages = ["C", "C++", "Java", "Python"]
 for lang in languages:
     print(lang)
 else:
-    print("We are done")
+    print("No more languages.")
 
 
 # for-loops
@@ -53,7 +53,7 @@ print("---------------------------")
 sum_n = 0
 for i in range(1, n+1):
     sum_n += i
-print(f"Sum = {sum_n}")
+print(f"Sum of first {n} integers = {sum_n}")
 
 for i in range(len(languages)):
     print(i, languages[i])
