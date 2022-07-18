@@ -22,7 +22,7 @@ def plot_model(weight, bias, inputs, targets, name="", show=False, save_path=Non
     plt.plot([x0, x1], [y0, y1], c='r')
     # Save the figure
     if save_path:
-        plt.savefig(save_path, dpi=1000, bbox_inches='tight', pad_inches=0.1)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight', pad_inches=0.1)
     if show:
         # Render the plot
         plt.show()
@@ -44,7 +44,7 @@ def plot_loss_curve(epochs, losses, show=False, save_path=None):
     plt.legend()
     # Save the figure
     if save_path:
-        plt.savefig(save_path, dpi=1000, bbox_inches='tight', pad_inches=0.1)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight', pad_inches=0.1)
     if show:
         # Render the plot
         plt.show()
@@ -67,7 +67,7 @@ plt.figure("Linear data")
 plt.scatter(data, labels)
 plt.xlabel("Inputs")
 plt.ylabel("Targets")
-plt.savefig("lin_regression_data.png", dpi=1000, bbox_inches='tight', pad_inches=0.1)
+plt.savefig("lin_regression_data.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
 if show:
     plt.show()
 else:
