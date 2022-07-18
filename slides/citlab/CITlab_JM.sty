@@ -1,0 +1,68 @@
+
+\RequirePackage{tikz}
+
+\setbeamertemplate{headline}{%
+	\vskip 3.4\mm
+	\begin{minipage}[c][21.0\mm][c]{\textwidth}
+		\hspace*{6mm}
+    \includegraphics[height=18\mm]{citlab/UNI-Logo_Siegel_4c_115mm}
+		\hfill
+    \includegraphics[height=18\mm]{citlab/CITlab_logo.png}
+% 		\hfill 
+%     \includegraphics[height=16\mm]{citlab/NewsEye_logo-text.png}
+		\hspace*{12mm}
+  \end{minipage}
+  \vskip  7.3\mm %Schritt bis zum bunten Rahmen
+ %\vskip 15.0\mm % Rand innerhalb des bunten Rahmens
+}
+
+\setbeamertemplate{firstFootline}{%
+  \vspace*{5.17635\mm} % Rand oberhalb der Fusszeile
+  \leavevmode%
+  \hbox{%                  % 244\mm zzgl. der Liniendicke (0.5\pt)
+    \begin{beamercolorbox}[wd=244.17635\mm,ht=5\mm,dp=3\mm,left]{author in head/foot}%
+		 \raggedleft
+		  \insertdate
+			\hspace*{30\mm}%
+		  \insertshortdate
+			\hspace*{30\mm}%
+    \end{beamercolorbox}
+	}%
+  \vskip0pt%
+}
+
+\setbeamertemplate{allFootline}{
+  \vspace*{5.17635\mm} % Rand oberhalb der Fusszeile
+  \leavevmode%
+  \hbox{%                  % 244\mm zzgl. der Liniendicke (0.5\pt)
+   \begin{beamercolorbox}[wd=244.17635\mm,ht=5\mm,dp=3\mm,left]{author in head/foot}%
+    \hspace*{10\mm}%
+    \usebeamerfont{date in head/foot}\insertdate{}%
+		\hskip 0pt plus 1filll%
+    \usebeamerfont{title in head/foot}\insertshorttitle%
+		\ifx\insertsectionhead\@empty\else{\ | \ }\fi%
+		\usebeamerfont{section in head/foot}\insertsectionhead%
+		\ifx\insertsubsectionhead\@empty\else{\ | \ }\fi%
+		\usebeamerfont{subsection in head/foot}\insertsubsectionhead%
+		\hskip 0pt plus 1filll%
+		%\usebeamerfont{author in head/foot}\insertshortauthor%
+		\usebeamerfont{author in head/foot}\insertframenumber/\inserttotalframenumber%
+    \hspace*{10\mm}%
+   \end{beamercolorbox}%
+	}%
+  \vskip0pt%
+}
+
+\newcommand{\ctlbSectionTOC}{\begin{frame}{Subtopics}\tableofcontents[sectionstyle=show/hide, subsectionstyle=show/hide/hide]\end{frame}}
+\newcounter{ctlbSubPage}
+\newcommand{\ctlbWithSubPages}{\setcounter{ctlbSubPage}{0}}
+\newcommand{\ctlbInsertSubPage}{\stepcounter{ctlbSubPage}\arabic{ctlbSubPage}}
+
+\newcommand{\READ}{\textsc{READ}}
+\newcommand{\newseye}{\textsc{NewsEye}}
+\newcommand{\transkribus}{\textsc{Transkribus}}
+
+\setbeamerfont{button}{size=\footnotesize}
+\renewcommand{\insertskipsymbol}{\newseye}
+\newcommand{\partner}[1]{\hfill\beamerbutton{#1}}
+
