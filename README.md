@@ -1,2 +1,3 @@
-# mp_tf2
-Implementierungen von Beispielthemen aus dem Mathematischen Praktikum mit TensorFlow 2
+# Mathematisches Praktikum - Python & TensorFlow
+- Slides und tex files für Übungen
+- Implementierungen von Beispielthemen
